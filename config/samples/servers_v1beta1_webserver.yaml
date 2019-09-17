@@ -1,0 +1,7 @@
+apiVersion: servers.cnc.demo/v1beta1
+kind: WebServer
+metadata:
+  name: webserver-sample
+spec:
+  # Add fields here
+  foo: bar

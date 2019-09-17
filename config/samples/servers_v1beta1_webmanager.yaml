@@ -1,0 +1,7 @@
+apiVersion: servers.cnc.demo/v1beta1
+kind: WebManager
+metadata:
+  name: webmanager-sample
+spec:
+  # Add fields here
+  foo: bar

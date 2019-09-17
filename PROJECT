@@ -1,0 +1,10 @@
+version: "2"
+domain: cnc.demo
+repo: cnc-demo
+resources:
+- group: servers
+  version: v1beta1
+  kind: WebServer
+- group: servers
+  version: v1beta1
+  kind: WebManager
