@@ -25,8 +25,13 @@ import (
 
 // WebServerSpec defines the desired state of WebServer
 type WebServerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Replicas int32         `json:"replicas,omitempty"`
+	Content  string        `json:"content,omitempty"`
+	Port     WebServerPort `json:"port,omitempty"`
+}
+
+type WebServerPort struct {
+	HTTP int32 `json:"http,omitempty"`
 }
 
 // WebServerStatus defines the observed state of WebServer

@@ -1,0 +1,98 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  name: webmanagers.servers.cnc.demo
+spec:
+  group: servers.cnc.demo
+  names:
+    kind: WebManager
+    plural: webmanagers
+  scope: ""
+  validation:
+    openAPIV3Schema:
+      description: WebManager is the Schema for the webmanagers API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: WebManagerSpec defines the desired state of WebManager
+          properties:
+            autoDelete:
+              type: boolean
+            intervalMillis:
+              description: A Duration represents the elapsed time between two instants
+                as an int64 nanosecond count. The representation limits the largest
+                representable duration to approximately 290 years.
+              format: int64
+              type: integer
+            waitForFarewellMillis:
+              description: A Duration represents the elapsed time between two instants
+                as an int64 nanosecond count. The representation limits the largest
+                representable duration to approximately 290 years.
+              format: int64
+              type: integer
+            webServer:
+              description: WebServerSpec defines the desired state of WebServer
+              properties:
+                content:
+                  type: string
+                port:
+                  properties:
+                    http:
+                      format: int32
+                      type: integer
+                  type: object
+                replicas:
+                  format: int32
+                  type: integer
+              type: object
+            webSets:
+              type: integer
+          required:
+          - intervalMillis
+          - waitForFarewellMillis
+          - webServer
+          - webSets
+          type: object
+        status:
+          description: WebManagerStatus defines the observed state of WebManager
+          properties:
+            Achievement:
+              type: boolean
+            createdSets:
+              type: integer
+            lastUpdate:
+              type: string
+            state:
+              type: integer
+          required:
+          - Achievement
+          - createdSets
+          - lastUpdate
+          - state
+          type: object
+      type: object
+  version: v1beta1
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -1,0 +1,11 @@
+apiVersion: servers.cnc.demo/v1beta1
+kind: WebServer
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: webserver-demo
+spec:
+  replicas: 2
+  content: Hello, world !
+  port:
+    http: 8080

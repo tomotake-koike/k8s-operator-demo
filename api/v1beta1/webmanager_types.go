@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -25,14 +26,20 @@ import (
 
 // WebManagerSpec defines the desired state of WebManager
 type WebManagerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	WebSets              int           `json:"webSets"`
+	AutoDelete           bool          `json:"autoDelete,omitempty"`
+	CreateIntervalMillis time.Duration `json:"intervalMillis"`
+	WaitForFarewell      time.Duration `json:"waitForFarewellMillis"`
+
+	WebServer WebServerSpec `json:"webServer"`
 }
 
 // WebManagerStatus defines the observed state of WebManager
 type WebManagerStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	CreatedSets int    `json:"createdSets"`
+	Achievement bool   `json:"Achievement"`
+	LastUpdate  string `json:"lastUpdate"`
+	State       int    `json:"state"`
 }
 
 // +kubebuilder:object:root=true
