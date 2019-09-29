@@ -107,14 +107,34 @@ You need to delete old operator pod once if have deployed already.
 	
 				$ kubectl apply -f config/samples/sample_webserver01.yaml
 
+		- Delete _WebServer Operator_ after watching status
+	
+				$ kubectl apply -f config/samples/sample_webserver01.yaml
+
 	- Demo2
 		- Starting _WebManager Operator_
 	
 				$ kubectl apply -f config/samples/sample_webmanager01.yaml
+
+		- Delete _WebManager Operator_ after watching status
+		
+				$ kubectl delete -f config/samples/sample_webmanager01.yaml
 
 	- Demo3
 		- Starting _WebManager Operator_
 		
 				$ kubectl apply -f config/samples/sample_webmanager02_no_auto_delete.yaml
 
+		- Get WebManager Resource Information
+		
+				$ ns=cnc-demo-system
+				$ k get po -n $ns -o go-template="{{range .items}}{{.status.podIP}}{{end}}" | xargs -I {} curl http://{}:10080
 
+		- Refill WebServer Resource
+		
+				$ ns=cnc-demo-system
+				$ k get po -n $ns -o go-template="{{range .items}}{{.status.podIP}}{{end}}" | xargs -I {} curl -X REFILL http://{}:10080
+
+		- Delete _WebManager Operator_ after watching status
+		
+				$ kubectl delete -f config/samples/sample_webmanager02_no_auto_delete.yaml

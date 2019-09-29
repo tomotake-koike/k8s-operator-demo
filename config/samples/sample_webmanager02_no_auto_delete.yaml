@@ -3,7 +3,7 @@ kind: WebManager
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: webmanager-demo
+  name: webmanager-demo3
 spec:
   webSets: 5 
   intervalMillis: 2000
@@ -11,6 +11,6 @@ spec:
   waitForFarewellMillis: 60000
   webServer:
     replicas: 2
-    content: Hello, WebManager !
+    content: Hello, WebManager 3 !
     port:
       http: 8080
