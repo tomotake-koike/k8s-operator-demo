@@ -1,0 +1,16 @@
+apiVersion: servers.cnc.demo/v1beta1
+kind: WebManager
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: webmanager-demo
+spec:
+  webSets: 5 
+  intervalMillis: 2000
+  autoDelete: False
+  waitForFarewellMillis: 60000
+  webServer:
+    replicas: 2
+    content: Hello, WebManager !
+    port:
+      http: 8080
