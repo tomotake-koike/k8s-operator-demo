@@ -1,6 +1,12 @@
 # Kubernetes operator-demo
 WebServers and WebManager Operator Demo with kubebuilder v2
 
+## How demo is this?
+- Demo1 : Keep fixed state defined by manifest of Deployment and Service 
+(about Kubebuilder v1 version, reffer to https://github.com/cloudnativejp/webserver-operator/)
+- Demo2 : Create WebServer(s) in order to decelerate on Manifest.
+Then delete all created resource after some period.
+- Demo3 : If you call REFILL request of Controller's REST API, you can refill one WebServer resource.
 
 ## Prerequisites
 - Kubernetes 1.15.x
@@ -66,18 +72,19 @@ The 2 controlers and resouces is made by _'kubebuilder create api'_ commands.
 
 - Build Controller
 
-      $ make docker-build docker-push IMG=tomotake/cnc-demo
+      $ registry=[YOUR DOCKER REGISTORY]
+      $ make docker-build docker-push IMG=${registry}  # Probably you need to login to your registry.
 
 ## Deploy Operator
 
 - Deploy Controller
 
-      $ ns=cnc-demo-system ; make deploy IMG=tomotake/cnc-demo
+      $ ns=cnc-demo-system ; make deploy IMG=${registry}
 
 You need to delete old operator pod once if have deployed already.
 
-	  $ kubectl get po -n $ns -o name | xargs kubectl -n $ns delete
-	  $ kubectl get po -n $ns -o wide
+      $ kubectl get po -n $ns -o name | xargs kubectl -n $ns delete
+      $ kubectl get po -n $ns -o wide
 
 ## Test Operator
 
@@ -95,12 +102,19 @@ You need to delete old operator pod once if have deployed already.
 
 
 - Apply Resource
-	- Starting _WebServer Operator_
+	- Demo1
+		- Starting _WebServer Operator_
 	
-			$ kubectl apply -f config/samples/sample_webserver01.yaml
+				$ kubectl apply -f config/samples/sample_webserver01.yaml
 
-	- Starting _WebManager Operator_
+	- Demo2
+		- Starting _WebManager Operator_
 	
-			$ kubectl apply -f config/samples/sample_webmanager01.yaml
+				$ kubectl apply -f config/samples/sample_webmanager01.yaml
+
+	- Demo3
+		- Starting _WebManager Operator_
+		
+				$ kubectl apply -f config/samples/sample_webmanager02_no_auto_delete.yaml
 
 

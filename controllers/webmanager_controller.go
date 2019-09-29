@@ -18,7 +18,10 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/codegangsta/negroni"
+	"net/http"
 	"reflect"
 	run "runtime"
 	"strings"
@@ -34,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -44,10 +48,11 @@ import (
 // WebManagerReconciler reconciles a WebManager object
 type WebManagerReconciler struct {
 	client.Client
-	Log      logr.Logger
-	scheme   *runtime.Scheme
-	instance serversv1beta1.WebManager
-	mutex    sync.Mutex
+	Log            logr.Logger
+	scheme         *runtime.Scheme
+	instance       serversv1beta1.WebManager
+	mutex          sync.Mutex
+	NamespacedName types.NamespacedName
 }
 
 // +kubebuilder:rbac:groups=servers.cnc.demo,resources=webmanagers,verbs=get;list;watch;create;update;patch;delete
@@ -68,6 +73,8 @@ func (r *WebManagerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
+	r.NamespacedName = req.NamespacedName
 
 	stackb := make([]byte, 1<<20)
 	run.Stack(stackb, true)
@@ -206,6 +213,8 @@ func (r *WebManagerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
+	go start_api_server(r)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&serversv1beta1.WebManager{}).
 		Complete(r)
@@ -219,4 +228,60 @@ func define_webserver(instance *serversv1beta1.WebManager) *serversv1beta1.WebSe
 		},
 		Spec: instance.Spec.WebServer,
 	}
+}
+
+func start_api_server(r *WebManagerReconciler) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+
+		r.mutex.Lock()
+		defer r.mutex.Unlock()
+
+		if req.Method == "GET" || req.Method == "REFILL" {
+
+			instance := &serversv1beta1.WebManager{}
+			err := r.Get(context.TODO(), r.NamespacedName, instance)
+			if err != nil {
+				if errors.IsNotFound(err) {
+					fmt.Fprintf(w, "Object not found, return.  Created objects are automatically garbage collected.\n")
+					fmt.Fprintf(w, "For additional cleanup logic use finalizers.\n")
+					return
+				}
+				fmt.Fprintf(w, "Error reading the object - requeue the request.")
+				return
+			}
+
+			if req.Method == "REFILL" {
+
+				// REFILL
+				instance.Spec.WebSets++
+				// Update WebServer Status : State 2 -> 0
+				instance.Status.State = 0
+				instance.Status.LastUpdate = time.Now().String()
+				r.Log.V(1).Info("REFILL UPDATE WebManager 2 -> 0 : " + instance.Name)
+				if err := r.Update(context.TODO(), instance); err != nil {
+					fmt.Fprintf(w, "Refill Error : Failed to update from 2 to 0 : %s", instance.Name)
+					r.Log.V(1).Info("ERR  ", err, "Failed to update from 2 to 0 :", instance.Name)
+					return
+				}
+			}
+
+			prettyJSON, jsonerr := json.MarshalIndent(instance, "", "    ")
+			if jsonerr != nil {
+				fmt.Fprintf(w, "%+v\n", instance)
+			} else {
+				fmt.Fprintf(w, "%s\n", prettyJSON)
+			}
+
+		} else {
+
+			fmt.Fprintf(w, "NamespacedName: %+v", r.NamespacedName)
+			fmt.Fprintf(w, "Received Unsuppoted Method : %s \n", req.Method)
+
+		}
+
+	})
+	n := negroni.Classic()
+	n.UseHandler(mux)
+	n.Run(":10080")
 }
